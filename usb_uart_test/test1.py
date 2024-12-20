@@ -1,26 +1,33 @@
 import serial
 import time
 
-# Set up the serial connection
-serial_port = '/dev/ttyUSB0'  # Change this if your device is on a different port
-baud_rate = 115200  # Make sure this matches the baud rate set on the ESP32-C3
-timeout = 1  # Timeout for read operation
+# Configure the serial connection
+ser = serial.Serial(
+    port='/dev/ttyUSB0',  # USB-UART port
+    baudrate=115200,      # Match the baudrate of your device
+    bytesize=serial.EIGHTBITS,
+    parity=serial.PARITY_NONE,
+    stopbits=serial.STOPBITS_ONE,
+    timeout=1             # Read timeout in seconds
+)
 
 try:
-    # Create a serial connection
-    with serial.Serial(serial_port, baud_rate, timeout=timeout) as ser:
-        print(f"Connected to {serial_port} at {baud_rate} baud rate.")
+    while True:
+        # Check if data is available
+        if ser.in_waiting > 0:
+            # Read the data
+            data = ser.readline().decode('utf-8').strip()
+            
+            # Print the received data
+            print(f"Received: {data}")
+        
+        # Small delay to prevent high CPU usage
+        time.sleep(0.1)
 
-        # Allow some time for the connection to establish
-        time.sleep(2)
-
-        while True:
-            # Read a line from the serial port
-            if ser.in_waiting > 0:  # Check if data is available
-                line = ser.readline().decode('utf-8').rstrip()  # Read and decode the line
-                print(f"Received: {line}")  # Print the received line
-
-except serial.SerialException as e:
-    print(f"Error: {e}")
 except KeyboardInterrupt:
-    print("Exiting the program.")
+    print("Serial reading stopped by user")
+
+finally:
+    # Close the serial connection
+    ser.close()
+    print("Serial port closed")
