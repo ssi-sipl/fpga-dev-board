@@ -1,5 +1,13 @@
 import serial
 import time
+import logging
+
+# Configure logging
+logging.basicConfig(
+    filename='serial_read.log',  # Log file name
+    level=logging.INFO,           # Log level
+    format='%(asctime)s - %(levelname)s - %(message)s'  # Log format
+)
 
 # Configure the serial connection
 ser = serial.Serial(
@@ -12,22 +20,27 @@ ser = serial.Serial(
 )
 
 try:
+    logging.info("Serial reading started.")
+    
     while True:
         # Check if data is available
         if ser.in_waiting > 0:
             # Read the data
             data = ser.readline().decode('utf-8').strip()
             
-            # Print the received data
-            print(f"Received: {data}")
+            # Log the received data
+            logging.info(f"Received: {data}")
         
         # Small delay to prevent high CPU usage
         time.sleep(0.1)
 
 except KeyboardInterrupt:
-    print("Serial reading stopped by user")
+    logging.info("Serial reading stopped by user")
+
+except Exception as e:
+    logging.error(f"An error occurred: {e}")
 
 finally:
     # Close the serial connection
     ser.close()
-    print("Serial port closed")
+    logging.info("Serial port closed")
